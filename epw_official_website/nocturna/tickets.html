@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tickets — NOCTURNA Wrestling</title>
+<meta name="description" content="Compra tus boletos para los eventos de NOCTURNA." />
+<meta property="og:title" content="NOCTURNA Wrestling" />
+<meta property="og:description" content="Compra tus boletos para los eventos de NOCTURNA." />
+<meta property="og:type" content="website" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="tickets">
+
+<header class="site-header">
+  <div class="header-inner">
+    <button class="brand" id="brandTrigger" type="button" aria-label="NOCTURNA — 5 clicks activan el acceso de administrador">
+      NOCTURNA
+    </button>
+
+    <nav class="main-nav" aria-label="Navegación principal">
+      <a href="index.html" data-page="home">Inicio</a>
+      <a href="eventos.html" data-page="eventos">Próximos Eventos</a>
+      <a href="luchadores.html" data-page="roster">Roster</a>
+      <a href="tickets.html" data-page="tickets">Tickets</a>
+      <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
+      <a href="nosotros.html" data-page="nosotros">Acerca de Nosotros</a>
+      <a href="contacto.html" data-page="contact us">Contacto</a>
+    </nav>
+
+    <div class="header-actions">
+      <span class="admin-badge">● Modo administrador</span>
+      <button class="hamburger" id="hamburgerBtn" type="button" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="Navegación móvil">
+      <a href="index.html" data-page="home">Inicio</a>
+      <a href="eventos.html" data-page="eventos">Próximos Eventos</a>
+      <a href="luchadores.html" data-page="luchadores">Luchadores</a>
+      <a href="tickets.html" data-page="tickets">Tickets</a>
+      <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
+      <a href="nosotros.html" data-page="nosotros">Acerca de Nosotros</a>
+      <a href="contacto.html" data-page="contacto">Contacto</a>
+  </nav>
+</header>
+
+<main>
+  <section class="section page-banner" style="padding-top:64px;">
+    <div class="page-banner-glow" data-parallax="0.12" aria-hidden="true"></div>
+    <div class="container">
+      <div class="section-head">
+        <h2>Tickets</h2>
+        <p class="section-note">Precios en Dolar Americano. El pago se procesa a través de un proveedor seguro externo.</p>
+      </div>
+      <div id="ticketsByEvent"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">EPW</div>
+        <p style="max-width:28ch; margin-top:10px; font-size:0.85rem;">Lucha libre profesional. Boletos, roster y calendario oficial.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Navegación</h5>
+        <a href="index.html">Inicio</a>
+        <a href="eventos.html">Próximos Eventos</a>
+        <a href="luchadores.html">Luchadores</a>
+        <a href="tickets.html">Tickets</a>
+        <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
+        <a href="nosotros.html">Acerca de Nosotros</a>
+      </div>
+      <div class="footer-col">
+        <h5>Síguenos</h5>
+        <div class="js-social-row js-footer-socials"></div>
+      </div>
+      <div class="footer-col">
+        <h5>Contacto</h5>
+        <a class="js-footer-email" href="#"></a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span class="js-footer-year"></span> Espiritu Pro Wrestling Dojo. Todos los derechos reservados.</span>
+      <span class="admin-only"><button class="btn-ghost" id="adminResetBtn" type="button">Restaurar valores de fábrica</button></span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="adminLoginModal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle" style="max-width:400px;">
+    <button class="modal-close" id="adminLoginClose" aria-label="Cerrar">×</button>
+    <h3 class="modal-title" id="adminLoginTitle">Acceso de administrador</h3>
+    <form id="adminLoginForm">
+      <div class="form-field">
+        <label for="adminPasswordInput">Contraseña</label>
+        <input type="password" id="adminPasswordInput" autocomplete="current-password" required />
+      </div>
+      <p class="form-error" id="adminLoginError">Contraseña incorrecta.</p>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </div>
+    </form>
+    <p class="admin-login-hint">Este acceso es solo para el equipo de EPW. El gesto de los 5 clicks solo abre este formulario; sin la contraseña correcta no se activa el modo edición.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="formModal">
+  <div class="modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" id="formModalClose" aria-label="Cerrar">×</button>
+    <h3 class="modal-title" id="formModalTitle"></h3>
+    <div id="formModalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/parallax.js"></script>
+</body>
+</html>
