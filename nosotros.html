@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Contacto — NOCTURNA Wrestling</title>
-<meta name="description" content="Redes sociales y contacto oficial de NOCTURNA." />
+<title>Acerca de Nosotros — NOCTURNA Wrestling</title>
+<meta name="description" content="La historia de NOCTURNA, promoción de lucha libre." />
 <meta property="og:title" content="NOCTURNA Wrestling" />
-<meta property="og:description" content="Redes sociales y contacto oficial de NOCTURNA." />
+<meta property="og:description" content="La historia de NOCTURNA, promoción de lucha libre." />
 <meta property="og:type" content="website" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
-<body data-page="contacto">
+<body data-page="nosotros">
 
 <header class="site-header">
   <div class="header-inner">
@@ -21,11 +21,11 @@
     <nav class="main-nav" aria-label="Navegación principal">
       <a href="index.html" data-page="home">Inicio</a>
       <a href="eventos.html" data-page="eventos">Próximos Eventos</a>
-      <a href="luchadores.html" data-page="roster">Roster</a>
+      <a href="luchadores.html" data-page="luchadores">Roster</a>
       <a href="tickets.html" data-page="tickets">Tickets</a>
       <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
       <a href="nosotros.html" data-page="nosotros">Acerca de Nosotros</a>
-      <a href="contacto.html" data-page="contact us">Contact us</a>
+      <a href="contacto.html" data-page="contacto">Contacto</a>
     </nav>
 
     <div class="header-actions">
@@ -39,7 +39,7 @@
   <nav class="mobile-nav" id="mobileNav" aria-label="Navegación móvil">
       <a href="index.html" data-page="home">Inicio</a>
       <a href="eventos.html" data-page="eventos">Próximos Eventos</a>
-      <a href="luchadores.html" data-page="luchadores">Luchadores</a>
+      <a href="luchadores.html" data-page="luchadores">Roster</a>
       <a href="tickets.html" data-page="tickets">Tickets</a>
       <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
       <a href="nosotros.html" data-page="nosotros">Acerca de Nosotros</a>
@@ -48,81 +48,16 @@
 </header>
 
 <main>
-  <section class="section page-banner contact-banner" style="padding-top:64px;">
-    <div class="page-banner-media" id="contactBannerMedia" aria-hidden="true"></div>
+  <section class="section page-banner about-banner" style="padding-top:64px;">
+    <div class="page-banner-media" id="aboutBannerMedia" aria-hidden="true"></div>
     <div class="page-banner-overlay" aria-hidden="true"></div>
     <div class="page-banner-glow" data-parallax="0.12" aria-hidden="true"></div>
-    <div class="container contact-hero-inner">
-      <div class="contact-hero-text">
-        <span class="hero-eyebrow" id="contactEyebrow"></span>
-        <h1 id="contactTitle"></h1>
-        <p id="contactSubtitle"></p>
-        <button class="btn btn-ghost admin-only" type="button" data-action="edit-contact-hero" style="margin-top:16px;">Editar encabezado</button>
-      </div>
-      <ul class="contact-hero-tags" id="contactHeroTags"></ul>
-    </div>
-  </section>
-
-  <section class="section contact-main">
-    <div class="container contact-grid">
-      <div class="contact-form-panel">
-        <div class="contact-panel-head">
-          <span class="contact-panel-icon" aria-hidden="true">✉️</span>
-          <h3>Envíanos un mensaje</h3>
-        </div>
-        <form id="contactForm" class="contact-form" novalidate>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="cf_name">Nombre completo *</label>
-              <input type="text" id="cf_name" name="name" required />
-            </div>
-            <div class="form-field">
-              <label for="cf_email">Correo electrónico *</label>
-              <input type="email" id="cf_email" name="email" required />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="cf_phone">Teléfono *</label>
-              <input type="tel" id="cf_phone" name="phone" required />
-            </div>
-            <div class="form-field">
-              <label for="cf_interest">¿En qué estás interesado? *</label>
-              <select id="cf_interest" name="interest" required>
-                <option value="" disabled selected>Elige una opción</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-field">
-            <label for="cf_message">Tu mensaje *</label>
-            <textarea id="cf_message" name="message" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary contact-submit">Enviar Mensaje</button>
-        </form>
-        <button class="btn btn-ghost admin-only" type="button" data-action="edit-contact-form" style="margin-top:14px;">Editar formulario</button>
-      </div>
-
-      <div class="contact-info-panel">
-        <h3>Información de Contacto</h3>
-        <ul class="contact-info-list" id="contactInfoList"></ul>
-        <div class="contact-map" id="contactMap"></div>
-        <button class="btn btn-ghost admin-only" type="button" data-action="edit-contact" style="margin-top:18px;">Editar redes y contacto</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="section contact-cta">
-    <div class="contact-cta-media" id="contactCtaMedia" aria-hidden="true"></div>
-    <div class="contact-cta-overlay" aria-hidden="true"></div>
-    <div class="container contact-cta-inner">
-      <div>
-        <span class="hero-eyebrow" id="ctaEyebrow"></span>
-        <h2 id="ctaTitle"></h2>
-        <p id="ctaSubtitle"></p>
-      </div>
-      <div class="contact-cta-actions">
-        <a href="#" class="btn btn-primary" id="ctaButton"></a>
-        <button class="btn btn-ghost admin-only" type="button" data-action="edit-contact-cta">Editar sección</button>
+    <div class="container">
+      <div class="about-text">
+        <span class="hero-eyebrow">Nuestra historia</span>
+        <h2 id="aboutTitle"></h2>
+        <p id="aboutBody" style="margin-top:16px;"></p>
+        <button class="btn btn-ghost admin-only" type="button" data-action="edit-about" style="margin-top:18px;">Editar sección</button>
       </div>
     </div>
   </section>
@@ -139,7 +74,7 @@
         <h5>Navegación</h5>
         <a href="index.html">Inicio</a>
         <a href="eventos.html">Próximos Eventos</a>
-        <a href="luchadores.html">Luchadores</a>
+        <a href="luchadores.html">Roster</a>
         <a href="tickets.html">Tickets</a>
         <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
         <a href="nosotros.html">Acerca de Nosotros</a>
@@ -154,7 +89,8 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© <span class="js-footer-year"></span> NOCTURNA Wrestling. Todos los derechos reservados.</span>
+      <span>© <span class="js-footer-year"></span> Espiritu Pro Wrestling Dojo. Todos los derechos reservados.</span>
+      <span>© <span class="js-footer-year"></span> Powered By Tryhard Web Solutions</span>
       <span class="admin-only"><button class="btn-ghost" id="adminResetBtn" type="button">Restaurar valores de fábrica</button></span>
     </div>
   </div>

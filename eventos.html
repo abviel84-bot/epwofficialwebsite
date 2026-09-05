@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Acerca de Nosotros — NOCTURNA Wrestling</title>
-<meta name="description" content="La historia de NOCTURNA, promoción de lucha libre." />
-<meta property="og:title" content="NOCTURNA Wrestling" />
-<meta property="og:description" content="La historia de NOCTURNA, promoción de lucha libre." />
+<title>Próximos Eventos — Espiritu Pro Wrestling Dojo</title>
+<meta name="description" content="Cartelera de próximos eventos de EPW." />
+<meta property="og:title" content="Espiritu Pro Wrestling Dojo" />
+<meta property="og:description" content="Cartelera de próximos eventos de EPW." />
 <meta property="og:type" content="website" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
-<body data-page="nosotros">
+<body data-page="eventos">
 
 <header class="site-header">
   <div class="header-inner">
-    <button class="brand" id="brandTrigger" type="button" aria-label="NOCTURNA — 5 clicks activan el acceso de administrador">
-      NOCTURNA
+    <button class="brand" id="brandTrigger" type="button" aria-label="Espiritu Pro Wrestling Dojo — 5 clicks activan el acceso de administrador">
+      EPW
     </button>
 
     <nav class="main-nav" aria-label="Navegación principal">
       <a href="index.html" data-page="home">Inicio</a>
       <a href="eventos.html" data-page="eventos">Próximos Eventos</a>
-      <a href="luchadores.html" data-page="roster">Roster</a>
+      <a href="luchadores.html" data-page="luchadores">Roster</a>
       <a href="tickets.html" data-page="tickets">Tickets</a>
       <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
       <a href="nosotros.html" data-page="nosotros">Acerca de Nosotros</a>
-      <a href="contacto.html" data-page="contact us">Contacto</a>
+      <a href="contacto.html" data-page="contacto">Contacto</a>
     </nav>
 
     <div class="header-actions">
@@ -39,7 +39,7 @@
   <nav class="mobile-nav" id="mobileNav" aria-label="Navegación móvil">
       <a href="index.html" data-page="home">Inicio</a>
       <a href="eventos.html" data-page="eventos">Próximos Eventos</a>
-      <a href="luchadores.html" data-page="luchadores">Luchadores</a>
+      <a href="luchadores.html" data-page="luchadores">Roster</a>
       <a href="tickets.html" data-page="tickets">Tickets</a>
       <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
       <a href="nosotros.html" data-page="nosotros">Acerca de Nosotros</a>
@@ -48,17 +48,14 @@
 </header>
 
 <main>
-  <section class="section page-banner about-banner" style="padding-top:64px;">
-    <div class="page-banner-media" id="aboutBannerMedia" aria-hidden="true"></div>
-    <div class="page-banner-overlay" aria-hidden="true"></div>
+  <section class="section page-banner" style="padding-top:64px;">
     <div class="page-banner-glow" data-parallax="0.12" aria-hidden="true"></div>
     <div class="container">
-      <div class="about-text">
-        <span class="hero-eyebrow">Nuestra historia</span>
-        <h2 id="aboutTitle"></h2>
-        <p id="aboutBody" style="margin-top:16px;"></p>
-        <button class="btn btn-ghost admin-only" type="button" data-action="edit-about" style="margin-top:18px;">Editar sección</button>
+      <div class="section-head">
+        <h2>Próximos Eventos</h2>
+        <p class="section-note">Cada función es distinta. Revisa fecha, sede y cartelera antes de comprar tu boleto.</p>
       </div>
+      <div class="event-grid" id="eventGrid"></div>
     </div>
   </section>
 </main>
@@ -67,14 +64,14 @@
   <div class="container">
     <div class="footer-inner">
       <div>
-        <div class="footer-brand">NOCTURNA</div>
+        <div class="footer-brand">EPW</div>
         <p style="max-width:28ch; margin-top:10px; font-size:0.85rem;">Lucha libre profesional. Boletos, roster y calendario oficial.</p>
       </div>
       <div class="footer-col">
         <h5>Navegación</h5>
         <a href="index.html">Inicio</a>
         <a href="eventos.html">Próximos Eventos</a>
-        <a href="luchadores.html">Luchadores</a>
+        <a href="luchadores.html">Roster</a>
         <a href="tickets.html">Tickets</a>
         <a href="#" class="js-superfan-link" rel="noopener noreferrer">Súper Fan</a>
         <a href="nosotros.html">Acerca de Nosotros</a>
@@ -89,7 +86,8 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© <span class="js-footer-year"></span> NOCTURNA Wrestling. Todos los derechos reservados.</span>
+      <span>© <span class="js-footer-year"></span> Espiritu Pro Wrestling Dojo. Todos los derechos reservados.</span>
+      <span>© <span class="js-footer-year"></span> Powered By Tryhard Web Solutions</span>
       <span class="admin-only"><button class="btn-ghost" id="adminResetBtn" type="button">Restaurar valores de fábrica</button></span>
     </div>
   </div>
@@ -109,7 +107,7 @@
         <button type="submit" class="btn btn-primary">Entrar</button>
       </div>
     </form>
-    <p class="admin-login-hint">Este acceso es solo para el equipo de NOCTURNA. El gesto de los 5 clicks solo abre este formulario; sin la contraseña correcta no se activa el modo edición.</p>
+    <p class="admin-login-hint">Este acceso es solo para el equipo de EPW. El gesto de los 5 clicks solo abre este formulario; sin la contraseña correcta no se activa el modo edición.</p>
   </div>
 </div>
 
