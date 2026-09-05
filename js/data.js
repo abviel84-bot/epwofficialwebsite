@@ -26,19 +26,19 @@ const ADMIN_PASSWORD = "nocturna2026";
  */
 const DEFAULT_DB = {
   site: {
-    brand: "NOCTURNA",
+    brand: "EPW",
     tagline: "La lucha libre no duerme.",
     heroSubtitle:
       "Cada mes, el cuadrilátero se enciende cuando cae el sol. Combates reales, personajes reales, una noche que no vas a olvidar.",
     heroMediaUrl: "",
-    instagramUrl: "https://instagram.com/nocturnawrestling",
-    facebookUrl: "https://facebook.com/nocturnawrestling",
+    instagramUrl: "",
+    facebookUrl: "",
     tiktokUrl: "",
-    contactEmail: "contacto@nocturnawrestling.com",
+    contactEmail: "",
     logoUrl: "",
     aboutTitle: "Diez años saliendo a escena cuando todo lo demás cierra",
     aboutBody:
-      "NOCTURNA nació en un gimnasio sin techo y una lona prestada. Hoy llenamos arenas, pero la idea sigue intacta: la función empieza cuando anochece y no para hasta que alguien queda tirado en la lona. Formamos luchadores, armamos rivalidades que duran años y tratamos cada boleto vendido como una promesa que hay que cumplir arriba del ring.",
+      "EPW nació en un gimnasio sin techo y una lona prestada. Hoy llenamos arenas, pero la idea sigue intacta: la función empieza cuando anochece y no para hasta que alguien queda tirado en la lona. Formamos luchadores, armamos rivalidades que duran años y tratamos cada boleto vendido como una promesa que hay que cumplir arriba del ring.",
     aboutMediaUrl: "",
     contactEyebrow: "Hablemos",
     contactTitle: "Contáctanos",
@@ -110,7 +110,7 @@ const DEFAULT_DB = {
       photoUrl: "",
       name: "Daniel Restrepo",
       ringName: "El Espectro",
-      bio: "Técnico veloz, especialista en llaves aéreas. Campeón NOCTURNA 2024-2025.",
+      bio: "Técnico veloz, especialista en llaves aéreas. Campeón EPW 2024-2025.",
       instagram: "https://instagram.com/elespectro",
       facebook: "",
       tiktok: "https://tiktok.com/@elespectro",
@@ -138,7 +138,7 @@ const DEFAULT_DB = {
       photoUrl: "",
       name: "Renata Cruz",
       ringName: "Furia",
-      bio: "La primera mujer en encabezar una función NOCTURNA. Estilo agresivo, sin miedo a las alturas.",
+      bio: "La primera mujer en encabezar una función EPW. Estilo agresivo, sin miedo a las alturas.",
       instagram: "https://instagram.com/furia.nocturna",
       facebook: "",
       tiktok: "https://tiktok.com/@furia.nocturna",
@@ -174,7 +174,7 @@ const DEFAULT_DB = {
     {
       id: "tk-003",
       eventId: "ev-001",
-      name: "VIP Nocturna",
+      name: "VIP EPW",
       description:
         "Ringside + acceso a zona de meet & greet con luchadores después de la función.",
       price: 1600,
@@ -189,7 +189,7 @@ const DEFAULT_DB = {
     bannerUrl: "",
     title: "Súper Fan",
     description:
-      "Para quienes no se pierden una función. Únete a la membresía Súper Fan de NOCTURNA en YouTube: acceso prioritario, precios especiales y contenido que nadie más ve.",
+      "Para quienes no se pierden una función. Únete a la membresía Súper Fan de EPW en YouTube: acceso prioritario, precios especiales y contenido que nadie más ve.",
     benefits: [
       "Preventa exclusiva antes que el público general",
       "Descuento fijo en todos los boletos",
@@ -199,7 +199,7 @@ const DEFAULT_DB = {
     price: 199,
     priceLabel: "por mes",
     ctaLabel: "Convertirme en Súper Fan (YouTube)",
-    ctaLink: "https://www.youtube.com/@nocturnawrestling/join",
+    ctaLink: "",
   },
 };
 
