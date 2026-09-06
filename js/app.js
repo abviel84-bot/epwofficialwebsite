@@ -728,6 +728,8 @@ document.addEventListener("click", (e) => {
   }
 });
 
+const LOADER_SESSION_KEY = "EPW_LOADER_SHOWN";
+
 /**
  * Oculta el overlay #pageLoader (ver css/style.css) con una transición
  * suave. Se llama una sola vez, cuando ya se pintó el contenido real
@@ -745,15 +747,33 @@ function hidePageLoader() {
 
 /* Primer render al cargar cualquier página del sitio */
 document.addEventListener("DOMContentLoaded", async () => {
+  const loader = document.getElementById("pageLoader");
+  // sessionStorage dura mientras la pestaña siga abierta: si el
+  // visitante ya vio el loader al entrar al sitio, no lo repetimos al
+  // navegar entre Inicio / Eventos / Tickets / etc. Solo vuelve a
+  // aparecer si cierra la pestaña o el navegador y entra de nuevo.
+  const alreadyShown = sessionStorage.getItem(LOADER_SESSION_KEY) === "1";
+
+  if (loader && alreadyShown) {
+    loader.remove(); // quitar de inmediato, sin transición ni espera
+  }
+
   loadCachedDB(); // instantáneo: usa lo último visto en este navegador
-  renderAll(); // se prepara en memoria, pero queda tapado por #pageLoader
-  // Respaldo: si Firebase tarda demasiado o falla, no dejamos el loader
-  // pegado para siempre — se quita solo a los 4s como máximo.
-  const loaderTimeout = setTimeout(hidePageLoader, 4000);
-  await initDB(); // trae los datos reales de Firebase (puede tardar un poco)
-  renderAll(); // repinta con los datos reales antes de mostrar la página
-  clearTimeout(loaderTimeout);
-  hidePageLoader();
+  renderAll(); // se prepara en memoria, pero queda tapado por #pageLoader (si sigue ahí)
+
+  if (loader && !alreadyShown) {
+    // Respaldo: si Firebase tarda demasiado o falla, no dejamos el
+    // loader pegado para siempre — se quita solo a los 4s como máximo.
+    const loaderTimeout = setTimeout(hidePageLoader, 4000);
+    await initDB();
+    renderAll();
+    clearTimeout(loaderTimeout);
+    hidePageLoader();
+    sessionStorage.setItem(LOADER_SESSION_KEY, "1");
+  } else {
+    await initDB();
+    renderAll();
+  }
 });
 
 /* Expuesto para que admin.js pueda re-renderizar tras guardar cambios */
