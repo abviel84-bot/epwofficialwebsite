@@ -2,17 +2,16 @@
  * data.js
  * ------------------------------------------------------------------
  * Toda la información editable del sitio vive aquí, en objetos y
- * arrays planos. El "Modo Administrador" lee estos mismos arrays,
- * los modifica y guarda una copia en localStorage bajo NOCTURNA_DB.
- * Cuando exista un backend real, basta con reemplazar las funciones
- * de este archivo (getDB / saveDB) por llamadas fetch() a una API:
- * el resto del sitio (app.js, admin.js) no necesita cambiar porque
- * siempre consume datos a través de getDB().
+ * arrays planos como valores de fábrica (DEFAULT_DB). El "Modo
+ * Administrador" lee y guarda esos mismos datos, pero el
+ * almacenamiento real es Firebase Firestore (base de datos en la
+ * nube) — así cualquier dispositivo ve los mismos cambios, no solo
+ * el navegador donde se editó. Las fotos y videos se suben a
+ * Cloudinary y solo su URL final se guarda en Firestore.
  * ------------------------------------------------------------------
  */
 
-const STORAGE_KEY = "NOCTURNA_DB";
-const ADMIN_KEY = "NOCTURNA_ADMIN_SESSION";
+const ADMIN_KEY = "EPW_ADMIN_SESSION"; // solo para recordar la sesión de admin en ESTE navegador; no guarda contenido
 
 // Contraseña de administrador del prototipo.
 // ADVERTENCIA: esto es solo para maquetar la interfaz. No es un
