@@ -191,7 +191,11 @@ function setActiveNav() {
 /** Detecta si una URL/base64 corresponde a un video, para elegir <video> o <img>. */
 function isVideoSrc(url) {
   if (!url) return false;
-  return /^data:video\//i.test(url) || /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(url);
+  return (
+    /^data:video\//i.test(url) ||
+    /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(url) ||
+    url.includes("res.cloudinary.com") && url.includes("/video/upload/") // las URLs de video de Cloudinary a veces no terminan en una extensión reconocible
+  );
 }
 
 function renderHero(db) {
@@ -681,7 +685,7 @@ document.addEventListener("click", (e) => {
 
 /* Primer render al cargar cualquier página del sitio */
 document.addEventListener("DOMContentLoaded", async () => {
-  await initDB(); // espera a traer los datos reales de Firebase antes de pintar nada
+  await initDB(); // trae los datos reales de Firebase
   renderAll();
 });
 
