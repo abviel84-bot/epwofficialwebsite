@@ -198,6 +198,47 @@ function isVideoSrc(url) {
   );
 }
 
+/**
+ * Si la URL es un video subido a Cloudinary, devuelve la URL de un
+ * frame fijo (jpg) del segundo 0 del mismo video — Cloudinary genera
+ * esa imagen automáticamente, no hay que subir nada aparte. Sirve
+ * como respaldo cuando el navegador bloquea el autoplay (por ejemplo
+ * con el Modo de Bajo Consumo de iOS activado): en vez de dejar el
+ * gran botón de "play" nativo en medio del hero, se muestra esta
+ * imagen fija y el fondo se sigue viendo terminado.
+ */
+function cloudinaryVideoPoster(url) {
+  if (!url || !url.includes("res.cloudinary.com") || !url.includes("/video/upload/")) return null;
+  return url
+    .replace("/video/upload/", "/video/upload/so_0/")
+    .replace(/\.[a-z0-9]+(\?.*)?$/i, ".jpg");
+}
+
+/**
+ * Intenta reproducir un <video> ya insertado en el DOM; si el
+ * navegador bloquea el autoplay (Modo de Bajo Consumo, políticas de
+ * datos, etc.) lo reemplaza por una imagen fija en vez de dejar el
+ * botón de play nativo pegado en medio del fondo.
+ */
+function ensureBgVideoPlays(container, videoEl, originalUrl) {
+  if (!videoEl) return;
+  const playPromise = videoEl.play();
+  if (playPromise === undefined) return; // navegador viejo sin Promise, se deja tal cual
+  playPromise.catch(() => {
+    const poster = cloudinaryVideoPoster(originalUrl);
+    if (poster && container.contains(videoEl)) {
+      const img = document.createElement("img");
+      img.src = poster;
+      img.alt = "";
+      img.loading = "lazy";
+      videoEl.replaceWith(img);
+    }
+    // Si no hay poster disponible (video no es de Cloudinary), se deja
+    // el <video> pausado tal cual — sigue siendo mejor que nada y el
+    // usuario puede tocarlo para reproducirlo.
+  });
+}
+
 function renderHero(db) {
   setText("heroBrand", db.site.brand);
   setText("heroSubtitle", db.site.heroSubtitle);
@@ -234,6 +275,10 @@ function renderHero(db) {
   bg.innerHTML = isVideoSrc(url)
     ? `<video src="${url}" autoplay muted loop playsinline></video>`
     : `<img src="${url}" alt="${db.site.brand}" />`;
+
+  if (isVideoSrc(url)) {
+    ensureBgVideoPlays(bg, bg.querySelector("video"), url);
+  }
 }
 
 function renderNextEvent(db) {
@@ -683,12 +728,32 @@ document.addEventListener("click", (e) => {
   }
 });
 
+/**
+ * Oculta el overlay #pageLoader (ver css/style.css) con una transición
+ * suave. Se llama una sola vez, cuando ya se pintó el contenido real
+ * (o, como respaldo, tras un tiempo máximo de espera para no dejar al
+ * visitante viendo una pantalla de carga eterna si Firebase tarda o
+ * falla).
+ */
+function hidePageLoader() {
+  const loader = document.getElementById("pageLoader");
+  if (!loader || loader.dataset.hidden) return;
+  loader.dataset.hidden = "true";
+  loader.classList.add("is-hidden");
+  setTimeout(() => loader.remove(), 400);
+}
+
 /* Primer render al cargar cualquier página del sitio */
 document.addEventListener("DOMContentLoaded", async () => {
   loadCachedDB(); // instantáneo: usa lo último visto en este navegador
-  renderAll(); // pinta ya mismo, sin esperar a internet
+  renderAll(); // se prepara en memoria, pero queda tapado por #pageLoader
+  // Respaldo: si Firebase tarda demasiado o falla, no dejamos el loader
+  // pegado para siempre — se quita solo a los 4s como máximo.
+  const loaderTimeout = setTimeout(hidePageLoader, 4000);
   await initDB(); // trae los datos reales de Firebase (puede tardar un poco)
-  renderAll(); // repinta en silencio si algo cambió desde otro dispositivo
+  renderAll(); // repinta con los datos reales antes de mostrar la página
+  clearTimeout(loaderTimeout);
+  hidePageLoader();
 });
 
 /* Expuesto para que admin.js pueda re-renderizar tras guardar cambios */
