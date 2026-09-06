@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Espiritu Pro Wrestling Dojo — Inicio</title>
-<meta name="description" content="Sitio oficial de Espiritu Pro Wrestling Dojo, promoción de lucha libre. Boletos, roster y próximos eventos." />
-<meta property="og:title" content="Espiritu Pro Wrestling Dojo" />
-<meta property="og:description" content="Sitio oficial de Espiritu Pro Wrestling Dojo, promoción de lucha libre. Boletos, roster y próximos eventos." />
+<title>NOCTURNA Wrestling — Inicio</title>
+<meta name="description" content="Sitio oficial de NOCTURNA, promoción de lucha libre. Boletos, roster y próximos eventos." />
+<meta property="og:title" content="NOCTURNA Wrestling" />
+<meta property="og:description" content="Sitio oficial de NOCTURNA, promoción de lucha libre. Boletos, roster y próximos eventos." />
 <meta property="og:type" content="website" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -14,8 +14,8 @@
 
 <header class="site-header">
   <div class="header-inner">
-    <button class="brand" id="brandTrigger" type="button" aria-label="EPW — 5 clicks activan el acceso de administrador">
-      EPW
+    <button class="brand" id="brandTrigger" type="button" aria-label="NOCTURNA — 5 clicks activan el acceso de administrador">
+      NOCTURNA
     </button>
 
     <nav class="main-nav" aria-label="Navegación principal">
@@ -55,7 +55,7 @@
     <div class="hero-overlay" aria-hidden="true"></div>
     <div class="hero-inner">
       <span class="hero-eyebrow">Próxima función en vivo</span>
-      <h1 id="heroBrand">EPW</h1>
+      <h1 id="heroBrand">NOCTURNA</h1>
       <p class="hero-tagline" id="heroSubtitle"></p>
       <div class="hero-actions">
         <a href="tickets.html" class="btn btn-primary">Comprar Tickets</a>
@@ -102,7 +102,7 @@
         </div>
         <div>
           <span class="feature-dot"></span>
-          <div><strong>Nuestra historia</strong><p><a href="nosotros.html">Acerca de Espiritu Pro Wrestling Dojo →</a></p></div>
+          <div><strong>Nuestra historia</strong><p><a href="nosotros.html">Acerca de NOCTURNA →</a></p></div>
         </div>
       </div>
     </div>
@@ -113,7 +113,7 @@
   <div class="container">
     <div class="footer-inner">
       <div>
-        <div class="footer-brand">Espiritu Pro Wrestling Dojo</div>
+        <div class="footer-brand">NOCTURNA</div>
         <p style="max-width:28ch; margin-top:10px; font-size:0.85rem;">Lucha libre profesional. Boletos, roster y calendario oficial.</p>
       </div>
       <div class="footer-col">
@@ -135,8 +135,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© <span class="js-footer-year"></span> Espiritu Pro Wrestling Dojo. Todos los derechos reservados.</span>
-      <span>© <span class="js-footer-year"></span> Powered By Tryhard Web Solutions</span>
+      <span>© <span class="js-footer-year"></span> NOCTURNA Wrestling. Todos los derechos reservados.</span>
       <span class="admin-only"><button class="btn-ghost" id="adminResetBtn" type="button">Restaurar valores de fábrica</button></span>
     </div>
   </div>
@@ -156,7 +155,7 @@
         <button type="submit" class="btn btn-primary">Entrar</button>
       </div>
     </form>
-    <p class="admin-login-hint">Este acceso es solo para el equipo de EPW. El gesto de los 5 clicks solo abre este formulario; sin la contraseña correcta no se activa el modo edición.</p>
+    <p class="admin-login-hint">Este acceso es solo para el equipo de NOCTURNA. El gesto de los 5 clicks solo abre este formulario; sin la contraseña correcta no se activa el modo edición.</p>
   </div>
 </div>
 
@@ -171,6 +170,9 @@
 <div class="toast" id="toast"></div>
 
 
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/admin.js"></script>

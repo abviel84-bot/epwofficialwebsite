@@ -203,34 +203,90 @@ const DEFAULT_DB = {
   },
 };
 
-/** Devuelve una copia profunda del estado guardado, o el default. */
-function getDB() {
+/**
+ * ------------------------------------------------------------------
+ * BASE DE DATOS EN LÍNEA (Firebase) — así todos los dispositivos ven
+ * lo mismo, no solo el navegador donde se editó.
+ *
+ * PASOS PARA ACTIVARLO (una sola vez, ~10 minutos):
+ * 1. Ve a https://console.firebase.google.com/ e inicia sesión con
+ *    una cuenta de Google.
+ * 2. "Agregar proyecto" → dale cualquier nombre → puedes desactivar
+ *    Google Analytics → "Crear proyecto".
+ * 3. En el menú izquierdo: "Compilación" → "Firestore Database" →
+ *    "Crear base de datos" → elige una ubicación → "Iniciar en modo
+ *    de prueba" (esto permite leer/escribir sin login; es aceptable
+ *    para este prototipo, igual que la contraseña de administrador
+ *    de arriba no es un sistema de seguridad real).
+ * 4. Click en el ícono de engranaje (arriba a la izquierda) →
+ *    "Configuración del proyecto" → baja hasta "Tus apps" → ícono
+ *    "</>" (Web) → dale un apodo → "Registrar app". Ahí te va a
+ *    mostrar un bloque `firebaseConfig = {...}` — copia esos 6-7
+ *    valores y pégalos abajo, reemplazando el objeto de ejemplo.
+ * 5. Sube el data.js actualizado a GitHub. Listo — desde ese momento
+ *    todos los dispositivos leen y escriben en el mismo lugar.
+ * (Para fotos y videos usamos Cloudinary en vez de Firebase Storage
+ * — ver las instrucciones más abajo en este mismo archivo).
+ * ------------------------------------------------------------------
+ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAcNLa4Oap7suMjGCq4uHYsSXTguufqkzg",
+  authDomain: "epw-website.firebaseapp.com",
+  projectId: "epw-website",
+  storageBucket: "epw-website.firebasestorage.app",
+  messagingSenderId: "1079374497399",
+  appId: "1:1079374497399:web:fd0a2470ea275d382ce872",
+};
+
+firebase.initializeApp(firebaseConfig);
+const firestoreDB = firebase.firestore();
+const SITE_DOC = firestoreDB.collection("epw-site").doc("main");
+
+/** Copia en memoria de los datos, para que getDB() siga siendo instantáneo (sin esperar red) en todo el resto del código. Se llena en initDB() al arrancar. */
+let _cachedDB = null;
+
+/**
+ * Debe llamarse UNA vez al arrancar la página (antes de renderAll),
+ * y hay que esperarla (await) porque trae los datos de internet.
+ * Si es la primera vez que alguien visita (el documento no existe
+ * todavía en Firestore), siembra los valores de fábrica.
+ */
+async function initDB() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(DEFAULT_DB);
-    const parsed = JSON.parse(raw);
-    // merge superficial por si el default gana nuevas llaves con el tiempo
-    return { ...structuredClone(DEFAULT_DB), ...parsed };
+    const snap = await SITE_DOC.get();
+    if (snap.exists) {
+      _cachedDB = { ...structuredClone(DEFAULT_DB), ...snap.data() };
+    } else {
+      _cachedDB = structuredClone(DEFAULT_DB);
+      await SITE_DOC.set(_cachedDB);
+    }
   } catch (err) {
-    console.error("No se pudo leer NOCTURNA_DB, usando valores de fábrica.", err);
-    return structuredClone(DEFAULT_DB);
+    console.error("No se pudo conectar con Firebase, usando valores de fábrica localmente.", err);
+    _cachedDB = structuredClone(DEFAULT_DB);
   }
 }
 
-/** Persiste el estado completo. */
-function saveDB(db) {
+/** Devuelve la copia ya cargada (ver initDB). Síncrono, como antes. */
+function getDB() {
+  return _cachedDB ? structuredClone(_cachedDB) : structuredClone(DEFAULT_DB);
+}
+
+/** Guarda en Firestore (nube, para todos) y actualiza la copia local. */
+async function saveDB(db) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    await SITE_DOC.set(db);
+    _cachedDB = structuredClone(db);
     return true;
   } catch (err) {
-    console.error("No se pudo guardar en localStorage.", err);
+    console.error("No se pudo guardar en Firebase.", err);
     return false;
   }
 }
 
-/** Restaura los valores de fábrica (botón de emergencia para el admin). */
-function resetDB() {
-  localStorage.removeItem(STORAGE_KEY);
+/** Restaura los valores de fábrica para todo el mundo (botón de emergencia para el admin). */
+async function resetDB() {
+  _cachedDB = structuredClone(DEFAULT_DB);
+  await SITE_DOC.set(_cachedDB);
 }
 
 function uid(prefix) {
@@ -239,74 +295,60 @@ function uid(prefix) {
 
 /**
  * ------------------------------------------------------------------
- * Almacenamiento de archivos pesados (foto/video del hero) en
- * IndexedDB en vez de localStorage. localStorage solo tiene unos
- * 5-10MB libres en la mayoría de navegadores, así que un video de
- * varios MB nunca cabría ahí. IndexedDB soporta cientos de MB.
+ * Fotos y videos: se suben a Cloudinary (gratis, sin tarjeta) en vez
+ * de Firebase Storage (que ahora exige tarjeta de crédito desde
+ * feb. 2026, aunque el uso normal siga siendo gratis).
  *
- * El objeto guardado en NOCTURNA_DB (localStorage) solo contiene una
- * referencia liviana como "idb:media:heroMediaUrl"; el archivo real
- * (el Blob) vive en IndexedDB bajo esa misma clave.
+ * PARA ACTIVARLO (~5 minutos, una sola vez):
+ * 1. Ve a https://cloudinary.com/users/register/free y crea una
+ *    cuenta gratis (no pide tarjeta).
+ * 2. En el Dashboard, arriba, copia tu "Cloud name" y pégalo abajo
+ *    en CLOUDINARY_CLOUD_NAME.
+ * 3. Ve a Settings (engranaje) → pestaña "Upload" → baja hasta
+ *    "Upload presets" → "Add upload preset". Ponle "Signing Mode"
+ *    en "Unsigned" (muy importante) → Save. Copia el nombre del
+ *    preset que se creó (algo como "xxxxxxxx") y pégalo abajo en
+ *    CLOUDINARY_UPLOAD_PRESET.
  * ------------------------------------------------------------------
  */
-
-const MEDIA_DB_NAME = "NOCTURNA_MEDIA";
-const MEDIA_STORE = "files";
+const CLOUDINARY_CLOUD_NAME = "fmajgain";
+const CLOUDINARY_UPLOAD_PRESET = "EPW-WEB";
 
 function isIdbRef(value) {
+  // Ya no se usa para archivos nuevos (ver comentario abajo), se
+  // deja solo por si quedó algún valor viejo guardado.
   return typeof value === "string" && value.startsWith("idb:");
 }
 
 function idbKeyFromRef(ref) {
-  return ref.slice(4); // quita el prefijo "idb:"
+  return ref.slice(4);
 }
 
-function openMediaDB() {
-  return new Promise((resolve, reject) => {
-    if (!window.indexedDB) {
-      reject(new Error("Este navegador no soporta IndexedDB."));
-      return;
-    }
-    const req = indexedDB.open(MEDIA_DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      if (!req.result.objectStoreNames.contains(MEDIA_STORE)) {
-        req.result.createObjectStore(MEDIA_STORE);
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-/** Guarda un archivo (File/Blob) en IndexedDB bajo la clave dada. */
+/** Sube un archivo a Cloudinary y devuelve su URL pública final. */
 async function idbSetFile(key, file) {
-  const db = await openMediaDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(MEDIA_STORE, "readwrite");
-    tx.objectStore(MEDIA_STORE).put(file, key);
-    tx.oncomplete = () => resolve(true);
-    tx.onerror = () => reject(tx.error);
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("public_id", key);
+  const resourceType = file.type.startsWith("video/") ? "video" : "image";
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
+    method: "POST",
+    body: formData,
   });
+  const data = await res.json();
+  if (!res.ok || !data.secure_url) {
+    throw new Error(data?.error?.message || "Error al subir el archivo a Cloudinary.");
+  }
+  return data.secure_url;
 }
 
-/** Recupera un archivo (File/Blob) de IndexedDB, o null si no existe. */
-async function idbGetFile(key) {
-  const db = await openMediaDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(MEDIA_STORE, "readonly");
-    const req = tx.objectStore(MEDIA_STORE).get(key);
-    req.onsuccess = () => resolve(req.result || null);
-    req.onerror = () => reject(req.error);
-  });
+/** Ya no se usa para archivos nuevos (que son URLs directas), se deja solo por compatibilidad. */
+async function idbGetFile() {
+  return null;
 }
 
-/** Borra un archivo de IndexedDB. */
-async function idbDeleteFile(key) {
-  const db = await openMediaDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(MEDIA_STORE, "readwrite");
-    tx.objectStore(MEDIA_STORE).delete(key);
-    tx.oncomplete = () => resolve(true);
-    tx.onerror = () => reject(tx.error);
-  });
+/** Borrar de Cloudinary requiere una llamada firmada desde un servidor (no se puede hacer segura solo con JavaScript en el navegador), así que por ahora las fotos reemplazadas simplemente quedan sin usar en la cuenta de Cloudinary — no afecta al sitio ni tiene costo dentro del plan gratis. */
+async function idbDeleteFile() {
+  return true;
 }
+

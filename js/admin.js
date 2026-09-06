@@ -81,9 +81,9 @@
     document.addEventListener("DOMContentLoaded", enterAdminMode);
   }
 
-  document.getElementById("adminResetBtn")?.addEventListener("click", () => {
-    if (confirm("Esto borrará todos los cambios guardados y volverá a los valores de fábrica. ¿Continuar?")) {
-      resetDB();
+  document.getElementById("adminResetBtn")?.addEventListener("click", async () => {
+    if (confirm("Esto borrará todos los cambios guardados y volverá a los valores de fábrica, para TODOS los visitantes. ¿Continuar?")) {
+      await resetDB();
       window.NOCTURNA.renderAll();
       window.NOCTURNA.showToast("Datos restaurados a los valores de fábrica.");
     }
@@ -238,25 +238,20 @@
           return;
         }
         const name = fileInput.dataset.photoFor;
-        const key = `media:${name}:${uid("ph")}`;
+        const key = `${name}-${uid("ph")}`;
         const preview = root.querySelector(`#preview_${name}`);
         const hidden = root.querySelector(`#f_${name}`);
-        const oldValue = hidden ? hidden.value : "";
-        if (preview) preview.innerHTML = `<span>Guardando…</span>`;
+        if (preview) preview.innerHTML = `<span>Subiendo…</span>`;
         try {
-          await idbSetFile(key, file);
-          if (hidden) hidden.value = `idb:${key}`;
+          const url = await idbSetFile(key, file);
+          if (hidden) hidden.value = url;
           if (preview) {
-            const objUrl = URL.createObjectURL(file);
-            preview.innerHTML = isVideo ? `<video src="${objUrl}" muted></video>` : `<img src="${objUrl}" alt="" />`;
-          }
-          if (isIdbRef(oldValue)) {
-            idbDeleteFile(idbKeyFromRef(oldValue)).catch((err) => console.error(err));
+            preview.innerHTML = isVideo ? `<video src="${url}" muted></video>` : `<img src="${url}" alt="" />`;
           }
         } catch (err) {
           console.error(err);
           if (preview) preview.innerHTML = `<span>Sin imagen</span>`;
-          window.NOCTURNA.showToast("No se pudo guardar ese archivo en el navegador. Prueba con uno más liviano.");
+          window.NOCTURNA.showToast("No se pudo subir ese archivo. Revisa tu conexión e intenta de nuevo.");
         }
       });
     });
@@ -271,23 +266,22 @@
           return;
         }
         const name = fileInput.dataset.mediaFor;
-        const key = `media:${name}`;
+        const key = `${name}-${uid("m")}`;
         const preview = root.querySelector(`#preview_${name}`);
         const hidden = root.querySelector(`#f_${name}`);
-        if (preview) preview.innerHTML = `<span>Guardando…</span>`;
+        if (preview) preview.innerHTML = `<span>Subiendo…</span>`;
         try {
-          await idbSetFile(key, file);
-          if (hidden) hidden.value = `idb:${key}`;
+          const url = await idbSetFile(key, file);
+          if (hidden) hidden.value = url;
           if (preview) {
-            const objUrl = URL.createObjectURL(file);
             preview.innerHTML = file.type.startsWith("video/")
-              ? `<video src="${objUrl}" muted></video>`
-              : `<img src="${objUrl}" alt="" />`;
+              ? `<video src="${url}" muted></video>`
+              : `<img src="${url}" alt="" />`;
           }
         } catch (err) {
           console.error(err);
           if (preview) preview.innerHTML = `<span>Sin imagen</span>`;
-          window.NOCTURNA.showToast("No se pudo guardar ese archivo en el navegador. Prueba con uno más liviano o pega una URL en su lugar.");
+          window.NOCTURNA.showToast("No se pudo subir ese archivo. Revisa tu conexión, o pega una URL en su lugar.");
         }
       });
     });
@@ -296,13 +290,9 @@
       btn.addEventListener("click", () => {
         const name = btn.dataset.clearImage;
         const hidden = root.querySelector(`#f_${name}`);
-        const oldValue = hidden ? hidden.value : "";
         if (hidden) hidden.value = "";
         const preview = root.querySelector(`#preview_${name}`);
         if (preview) preview.innerHTML = `<span>Sin imagen</span>`;
-        if (isIdbRef(oldValue)) {
-          idbDeleteFile(idbKeyFromRef(oldValue)).catch((err) => console.error(err));
-        }
       });
     });
   }
@@ -330,15 +320,14 @@
    * lleno, típicamente por fotos subidas como base64), el usuario
    * veía "Guardado" aunque nada se hubiera guardado en realidad.
    */
-  function persistAndReport(db, successMessage) {
-    const ok = saveDB(db);
+  async function persistAndReport(db, successMessage) {
+    window.NOCTURNA.showToast("Guardando…");
+    const ok = await saveDB(db);
     window.NOCTURNA.renderAll();
     if (ok) {
       window.NOCTURNA.showToast(successMessage);
     } else {
-      window.NOCTURNA.showToast(
-        "No se pudo guardar: el almacenamiento del navegador está lleno. Quita alguna foto, usa imágenes más ligeras, o pega una URL de imagen en vez de subir el archivo."
-      );
+      window.NOCTURNA.showToast("No se pudo guardar. Revisa tu conexión a internet e intenta de nuevo.");
     }
     return ok;
   }

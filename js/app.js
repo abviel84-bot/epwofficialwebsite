@@ -680,7 +680,10 @@ document.addEventListener("click", (e) => {
 });
 
 /* Primer render al cargar cualquier página del sitio */
-document.addEventListener("DOMContentLoaded", renderAll);
+document.addEventListener("DOMContentLoaded", async () => {
+  await initDB(); // espera a traer los datos reales de Firebase antes de pintar nada
+  renderAll();
+});
 
 /* Expuesto para que admin.js pueda re-renderizar tras guardar cambios */
 window.NOCTURNA = { renderAll, showToast, openModal, closeModal };
