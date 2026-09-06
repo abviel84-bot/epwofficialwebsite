@@ -143,10 +143,9 @@
    * vista previa usa object-fit: contain, así que la foto nunca se
    * recorta ni se deforma — se adapta al espacio disponible.
    *
-   * NOTA: guarda la foto directo en localStorage (~5-10MB en total para
-   * todo el sitio), así que solo se usa para casos con pocas imágenes.
-   * Para fotos que se repiten muchas veces (roster, eventos, etc.) usa
-   * photoField(), que guarda en IndexedDB y no tiene ese límite.
+   * NOTA: ya no se usa en ningún formulario del sitio (todas las fotos
+   * pasan por photoField, que sube a Cloudinary). Se deja disponible
+   * solo por si hiciera falta un campo de imagen simple en el futuro.
    */
   function imageField(label, name, value, placeholder) {
     return `
@@ -167,15 +166,12 @@
   }
 
   /**
-   * Igual que imageField(), pero guarda el archivo en IndexedDB en vez
-   * de localStorage — así puedes tener tantas tarjetas con foto como
-   * quieras (luchadores, eventos, etc.) sin quedarte sin espacio. Cada
-   * foto se guarda con una clave única, así que no se pisan entre sí
-   * aunque el campo del formulario se llame igual en cada tarjeta.
-   *
-   * Si allowVideo es true, además de fotos acepta video (igual que el
-   * fondo del hero en Inicio): sube hasta 50MB y la vista previa
-   * detecta el tipo de archivo automáticamente.
+   * Igual que imageField(), pero sube el archivo a Cloudinary en vez de
+   * guardarlo como base64 — así puedes tener tantas tarjetas con foto
+   * como quieras (luchadores, eventos, etc.) sin límite real de tamaño,
+   * y el dato que queda guardado en Firestore es solo la URL final
+   * (liviana), no el archivo completo. Si allowVideo es true, también
+   * acepta video (igual que el fondo del hero en Inicio).
    */
   function photoField(label, name, value, placeholder, allowVideo) {
     return `
@@ -251,7 +247,7 @@
         } catch (err) {
           console.error(err);
           if (preview) preview.innerHTML = `<span>Sin imagen</span>`;
-          window.NOCTURNA.showToast("No se pudo subir ese archivo. Revisa tu conexión e intenta de nuevo.");
+          window.NOCTURNA.showToast(`No se pudo subir: ${err.message || "error desconocido"}`);
         }
       });
     });
@@ -281,7 +277,7 @@
         } catch (err) {
           console.error(err);
           if (preview) preview.innerHTML = `<span>Sin imagen</span>`;
-          window.NOCTURNA.showToast("No se pudo subir ese archivo. Revisa tu conexión, o pega una URL en su lugar.");
+          window.NOCTURNA.showToast(`No se pudo subir: ${err.message || "error desconocido"}`);
         }
       });
     });
@@ -315,10 +311,9 @@
 
   /**
    * Guarda la base de datos y SIEMPRE avisa si falló. Antes, muchas
-   * funciones llamaban a saveDB() sin revisar si de verdad guardó,
-   * así que si el navegador se quedaba sin espacio (localStorage
-   * lleno, típicamente por fotos subidas como base64), el usuario
-   * veía "Guardado" aunque nada se hubiera guardado en realidad.
+   * funciones llamaban a saveDB() sin revisar si de verdad guardó, así
+   * que si algo fallaba (ej. sin conexión a internet), el usuario veía
+   * "Guardado" aunque nada se hubiera guardado en realidad.
    */
   async function persistAndReport(db, successMessage) {
     window.NOCTURNA.showToast("Guardando…");
@@ -528,7 +523,7 @@
           ${field("Precio", "price", t.price, "number", "0.01")}
           ${field("Cantidad disponible", "quantityAvailable", t.quantityAvailable, "number")}
         </div>
-        ${imageField("Imagen del ticket (opcional)", "imageUrl", t.imageUrl)}
+        ${photoField("Imagen del ticket (opcional)", "imageUrl", t.imageUrl)}
         ${field("Enlace o método de compra", "purchaseLink", t.purchaseLink)}
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Guardar cambios</button>
