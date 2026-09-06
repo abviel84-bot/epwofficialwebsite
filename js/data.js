@@ -310,7 +310,7 @@ function uid(prefix) {
  *    CLOUDINARY_UPLOAD_PRESET.
  * ------------------------------------------------------------------
  */
-const CLOUDINARY_CLOUD_NAME = "fmajgain";
+const CLOUDINARY_CLOUD_NAME = "fmaigain";
 const CLOUDINARY_UPLOAD_PRESET = "EPW-WEB";
 
 function isIdbRef(value) {
