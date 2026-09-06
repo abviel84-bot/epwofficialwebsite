@@ -685,8 +685,10 @@ document.addEventListener("click", (e) => {
 
 /* Primer render al cargar cualquier página del sitio */
 document.addEventListener("DOMContentLoaded", async () => {
-  await initDB(); // trae los datos reales de Firebase
-  renderAll();
+  loadCachedDB(); // instantáneo: usa lo último visto en este navegador
+  renderAll(); // pinta ya mismo, sin esperar a internet
+  await initDB(); // trae los datos reales de Firebase (puede tardar un poco)
+  renderAll(); // repinta en silencio si algo cambió desde otro dispositivo
 });
 
 /* Expuesto para que admin.js pueda re-renderizar tras guardar cambios */

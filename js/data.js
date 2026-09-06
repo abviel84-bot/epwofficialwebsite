@@ -241,14 +241,40 @@ firebase.initializeApp(firebaseConfig);
 const firestoreDB = firebase.firestore();
 const SITE_DOC = firestoreDB.collection("epw-site").doc("main");
 
-/** Copia en memoria de los datos, para que getDB() siga siendo instantáneo (sin esperar red) en todo el resto del código. Se llena en initDB() al arrancar. */
+/**
+ * Copia en memoria de los datos, para que getDB() siga siendo
+ * instantáneo (sin esperar red) en todo el resto del código.
+ *
+ * Además se guarda un espejo liviano en localStorage (CACHE_KEY) —
+ * OJO: esto ya NO es la fuente de verdad (esa es Firestore), es solo
+ * una copia de "acceso rápido" para que la página abra al instante
+ * con lo último que se vio en este navegador, en vez de mostrar la
+ * pantalla en blanco o los valores de fábrica mientras espera a
+ * internet. Apenas responde Firebase, se actualiza sola.
+ */
+const CACHE_KEY = "EPW_CACHE_V1";
 let _cachedDB = null;
 
+/** Carga instantánea desde la copia guardada en este navegador (si existe). Llamar ANTES del primer renderAll(), no hace falta await. */
+function loadCachedDB() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      _cachedDB = { ...structuredClone(DEFAULT_DB), ...JSON.parse(cached) };
+      return;
+    }
+  } catch (err) {
+    console.error("No se pudo leer la caché local.", err);
+  }
+  _cachedDB = structuredClone(DEFAULT_DB);
+}
+
 /**
- * Debe llamarse UNA vez al arrancar la página (antes de renderAll),
- * y hay que esperarla (await) porque trae los datos de internet.
- * Si es la primera vez que alguien visita (el documento no existe
- * todavía en Firestore), siembra los valores de fábrica.
+ * Trae los datos reales de Firebase (tarda lo que tarde la red) y
+ * actualiza la caché en memoria y en localStorage. Llamar después de
+ * loadCachedDB() + un primer renderAll(); cuando esta promesa
+ * resuelva, hay que volver a llamar renderAll() para reflejar
+ * cualquier cambio hecho desde otro dispositivo.
  */
 async function initDB() {
   try {
@@ -259,22 +285,23 @@ async function initDB() {
       _cachedDB = structuredClone(DEFAULT_DB);
       await SITE_DOC.set(_cachedDB);
     }
+    localStorage.setItem(CACHE_KEY, JSON.stringify(_cachedDB));
   } catch (err) {
-    console.error("No se pudo conectar con Firebase, usando valores de fábrica localmente.", err);
-    _cachedDB = structuredClone(DEFAULT_DB);
+    console.error("No se pudo conectar con Firebase; se sigue usando lo último guardado en este navegador.", err);
   }
 }
 
-/** Devuelve la copia ya cargada (ver initDB). Síncrono, como antes. */
+/** Devuelve la copia ya cargada (ver loadCachedDB / initDB). Síncrono. */
 function getDB() {
   return _cachedDB ? structuredClone(_cachedDB) : structuredClone(DEFAULT_DB);
 }
 
-/** Guarda en Firestore (nube, para todos) y actualiza la copia local. */
+/** Guarda en Firestore (nube, para todos) y actualiza la copia local + la caché de este navegador. */
 async function saveDB(db) {
   try {
     await SITE_DOC.set(db);
     _cachedDB = structuredClone(db);
+    localStorage.setItem(CACHE_KEY, JSON.stringify(_cachedDB));
     return true;
   } catch (err) {
     console.error("No se pudo guardar en Firebase.", err);
@@ -286,6 +313,7 @@ async function saveDB(db) {
 async function resetDB() {
   _cachedDB = structuredClone(DEFAULT_DB);
   await SITE_DOC.set(_cachedDB);
+  localStorage.setItem(CACHE_KEY, JSON.stringify(_cachedDB));
 }
 
 function uid(prefix) {
