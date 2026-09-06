@@ -68,6 +68,30 @@ function showToast(message) {
 }
 
 /**
+ * Si la URL es un video de Cloudinary, le agrega f_auto,q_auto para
+ * que Cloudinary sirva el códec/calidad más liviano que el navegador
+ * soporte (archivo bastante más pequeño, sin subir nada de nuevo).
+ * Si no es de Cloudinary, se devuelve tal cual.
+ */
+function optimizeCloudinaryVideo(url) {
+  if (!url || !url.includes("res.cloudinary.com") || !url.includes("/video/upload/")) return url;
+  if (url.includes("/video/upload/f_auto") || url.includes("/video/upload/q_auto")) return url; // ya optimizado
+  return url.replace("/video/upload/", "/video/upload/f_auto,q_auto/");
+}
+
+/**
+ * Devuelve el HTML de un <video> de fondo con poster (así se ve un
+ * frame fijo al instante en vez de una pantalla en blanco/buffering)
+ * y preload="metadata" (el navegador NO descarga el video completo
+ * de una vez, solo lo necesario para poder arrancar a reproducir).
+ */
+function bgVideoHTML(url) {
+  const optimized = optimizeCloudinaryVideo(url);
+  const poster = cloudinaryVideoPoster(url);
+  return `<video src="${optimized}" autoplay muted loop playsinline preload="metadata"${poster ? ` poster="${poster}"` : ""}></video>`;
+}
+
+/**
  * Imagen o video sin marco: si hay URL se muestra tal cual (se adapta
  * al ancho disponible), si no, placeholder. Si el archivo se guardó en
  * IndexedDB (referencia "idb:..."), se muestra un "Cargando…" temporal
@@ -80,7 +104,7 @@ function mediaOrPlaceholder(url, altText, placeholderText, placeholderClass) {
       return `<span class="${placeholderClass || "hero-media-placeholder"}" data-idb-photo="${url}" data-idb-alt="${altText}">Cargando…</span>`;
     }
     if (isVideoSrc(url)) {
-      return `<video src="${url}" autoplay muted loop playsinline></video>`;
+      return bgVideoHTML(url);
     }
     return `<img src="${url}" alt="${altText}" loading="lazy" />`;
   }
@@ -262,7 +286,7 @@ function renderHero(db) {
         }
         const objUrl = URL.createObjectURL(file);
         bg.innerHTML = file.type.startsWith("video/")
-          ? `<video src="${objUrl}" autoplay muted loop playsinline></video>`
+          ? `<video src="${objUrl}" autoplay muted loop playsinline preload="metadata"></video>`
           : `<img src="${objUrl}" alt="${db.site.brand}" />`;
       })
       .catch((err) => {
@@ -273,7 +297,7 @@ function renderHero(db) {
   }
 
   bg.innerHTML = isVideoSrc(url)
-    ? `<video src="${url}" autoplay muted loop playsinline></video>`
+    ? bgVideoHTML(url)
     : `<img src="${url}" alt="${db.site.brand}" />`;
 
   if (isVideoSrc(url)) {
@@ -761,18 +785,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadCachedDB(); // instantáneo: usa lo último visto en este navegador
   renderAll(); // se prepara en memoria, pero queda tapado por #pageLoader (si sigue ahí)
 
+  // Snapshot de lo que ya se pintó, para comparar después: si Firebase
+  // responde con exactamente lo mismo (el caso normal, cuando nadie
+  // ha editado nada), NO volvemos a llamar renderAll(). Esto evita
+  // recrear el <video> de fondo (y por lo tanto volver a hacer
+  // buffering) en cada página solo porque terminó de sincronizar.
+  const beforeSync = JSON.stringify(getDB());
+
   if (loader && !alreadyShown) {
     // Respaldo: si Firebase tarda demasiado o falla, no dejamos el
     // loader pegado para siempre — se quita solo a los 4s como máximo.
     const loaderTimeout = setTimeout(hidePageLoader, 4000);
     await initDB();
-    renderAll();
+    if (JSON.stringify(getDB()) !== beforeSync) renderAll();
     clearTimeout(loaderTimeout);
     hidePageLoader();
     sessionStorage.setItem(LOADER_SESSION_KEY, "1");
   } else {
     await initDB();
-    renderAll();
+    if (JSON.stringify(getDB()) !== beforeSync) renderAll();
   }
 });
 

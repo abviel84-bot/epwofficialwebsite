@@ -276,7 +276,18 @@ function loadCachedDB() {
  * resuelva, hay que volver a llamar renderAll() para reflejar
  * cualquier cambio hecho desde otro dispositivo.
  */
+// Cuánto tiempo (ms) confiar en lo ya sincronizado en ESTA pestaña
+// antes de volver a pedirle los datos a Firebase. Sirve para que
+// navegar rápido entre Inicio / Eventos / Tickets / etc. no dispare
+// una consulta de red en cada click — solo se refresca cada rato.
+const SYNC_FRESH_MS = 20000;
+const SYNC_TIME_KEY = "EPW_LAST_SYNC";
+
 async function initDB() {
+  const lastSync = Number(sessionStorage.getItem(SYNC_TIME_KEY) || 0);
+  if (_cachedDB && Date.now() - lastSync < SYNC_FRESH_MS) {
+    return; // ya se sincronizó hace poco en esta pestaña, no repetir la consulta
+  }
   try {
     const snap = await SITE_DOC.get();
     if (snap.exists) {
@@ -286,6 +297,7 @@ async function initDB() {
       await SITE_DOC.set(_cachedDB);
     }
     localStorage.setItem(CACHE_KEY, JSON.stringify(_cachedDB));
+    sessionStorage.setItem(SYNC_TIME_KEY, String(Date.now()));
   } catch (err) {
     console.error("No se pudo conectar con Firebase; se sigue usando lo último guardado en este navegador.", err);
   }
@@ -302,6 +314,7 @@ async function saveDB(db) {
     await SITE_DOC.set(db);
     _cachedDB = structuredClone(db);
     localStorage.setItem(CACHE_KEY, JSON.stringify(_cachedDB));
+    sessionStorage.setItem(SYNC_TIME_KEY, String(Date.now()));
     return true;
   } catch (err) {
     console.error("No se pudo guardar en Firebase.", err);
@@ -314,6 +327,7 @@ async function resetDB() {
   _cachedDB = structuredClone(DEFAULT_DB);
   await SITE_DOC.set(_cachedDB);
   localStorage.setItem(CACHE_KEY, JSON.stringify(_cachedDB));
+  sessionStorage.setItem(SYNC_TIME_KEY, String(Date.now()));
 }
 
 function uid(prefix) {
