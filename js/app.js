@@ -68,29 +68,17 @@ function showToast(message) {
 }
 
 /**
- * Si la URL es un video de Cloudinary, le agrega f_auto,q_auto para
- * que Cloudinary sirva el códec/calidad más liviano que el navegador
- * soporte (archivo bastante más pequeño, sin subir nada de nuevo).
- * Si no es de Cloudinary, se devuelve tal cual.
- */
-function optimizeCloudinaryVideo(url) {
-  if (!url || !url.includes("res.cloudinary.com") || !url.includes("/video/upload/")) return url;
-  if (url.includes("/video/upload/f_auto") || url.includes("/video/upload/q_auto")) return url; // ya optimizado
-  return url.replace("/video/upload/", "/video/upload/f_auto,q_auto/");
-}
-
-/**
  * Devuelve el HTML de un <video> de fondo con poster (así se ve un
- * frame fijo al instante en vez de una pantalla en blanco/buffering)
- * y preload="metadata" (el navegador NO descarga el video completo
- * de una vez, solo lo necesario para poder arrancar a reproducir).
+ * frame fijo al instante en vez de una pantalla en blanco/buffering).
+ * Usa preload="auto" para que el navegador guarde el video completo
+ * en memoria — así el loop (cuando vuelve al inicio) no se pausa
+ * esperando a re-descargar el principio del archivo.
  * La clase "bg-video" hace que aparezca con una transición suave
  * (ver wireBgVideos) en vez de un salto brusco apenas puede reproducir.
  */
 function bgVideoHTML(url) {
-  const optimized = optimizeCloudinaryVideo(url);
   const poster = cloudinaryVideoPoster(url);
-  return `<video class="bg-video" src="${optimized}" autoplay muted loop playsinline preload="metadata"${poster ? ` poster="${poster}"` : ""}></video>`;
+  return `<video class="bg-video" src="${url}" autoplay muted loop playsinline preload="auto"${poster ? ` poster="${poster}"` : ""}></video>`;
 }
 
 /**
