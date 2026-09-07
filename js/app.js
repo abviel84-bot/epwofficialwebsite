@@ -84,11 +84,13 @@ function optimizeCloudinaryVideo(url) {
  * frame fijo al instante en vez de una pantalla en blanco/buffering)
  * y preload="metadata" (el navegador NO descarga el video completo
  * de una vez, solo lo necesario para poder arrancar a reproducir).
+ * La clase "bg-video" hace que aparezca con una transición suave
+ * (ver wireBgVideos) en vez de un salto brusco apenas puede reproducir.
  */
 function bgVideoHTML(url) {
   const optimized = optimizeCloudinaryVideo(url);
   const poster = cloudinaryVideoPoster(url);
-  return `<video src="${optimized}" autoplay muted loop playsinline preload="metadata"${poster ? ` poster="${poster}"` : ""}></video>`;
+  return `<video class="bg-video" src="${optimized}" autoplay muted loop playsinline preload="metadata"${poster ? ` poster="${poster}"` : ""}></video>`;
 }
 
 /**
@@ -146,6 +148,42 @@ function resolveIdbPhotos(root) {
       });
   });
 }
+
+/**
+ * Hace que cada <video class="bg-video"> aparezca con una transición
+ * suave (fade-in) justo cuando ya puede reproducirse de verdad, en
+ * vez de aparecer de golpe y con el pequeño tirón/pausa inicial que
+ * se ve mientras el navegador todavía está guardando el buffer.
+ */
+function wireBgVideos(root) {
+  (root || document).querySelectorAll("video.bg-video").forEach((video) => {
+    if (video.dataset.wired) return;
+    video.dataset.wired = "true";
+    const reveal = () => video.classList.add("is-ready");
+    if (video.readyState >= 3) {
+      reveal(); // ya tenía suficiente buffer (ej. viene de la caché del navegador)
+    } else {
+      video.addEventListener("playing", reveal, { once: true });
+    }
+  });
+}
+
+/**
+ * Algunos navegadores (sobre todo Safari/iOS) pausan los videos en
+ * autoplay cuando la pestaña queda en segundo plano o cuando se sale
+ * de la app. Esto los vuelve a reproducir apenas la página se ve de
+ * nuevo, para que no se quede congelado en un solo frame.
+ */
+function resumeBgVideos() {
+  document.querySelectorAll("video.bg-video").forEach((video) => {
+    if (video.paused) video.play().catch(() => {});
+  });
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) resumeBgVideos();
+});
+window.addEventListener("pageshow", resumeBgVideos);
+window.addEventListener("focus", resumeBgVideos);
 
 function socialLinksHTML(entity, extraClass) {
   return Object.keys(SOCIAL_ICONS)
@@ -659,6 +697,7 @@ function renderAll() {
   renderContactPage(db);
   setActiveNav();
   resolveIdbPhotos();
+  wireBgVideos();
 }
 
 /* ---------------------- MODALES ---------------------- */
@@ -711,6 +750,33 @@ if (hamburgerBtn && mobileNav) {
     })
   );
 }
+
+/* ---------------------- TRANSICIÓN SUAVE ENTRE PÁGINAS ---------------------- */
+
+/** true solo para links que llevan a OTRA página de este mismo sitio (no anclas, no mailto/tel, no target="_blank", no enlaces externos como el de Súper Fan en YouTube). */
+function isInternalPageLink(a) {
+  const href = a.getAttribute("href") || "";
+  if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return false;
+  if (a.target && a.target !== "_self") return false;
+  if (a.hasAttribute("download")) return false;
+  try {
+    const url = new URL(href, window.location.href);
+    return url.origin === window.location.origin && url.pathname !== window.location.pathname;
+  } catch {
+    return false;
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const a = e.target.closest("a");
+  if (!a || !isInternalPageLink(a)) return;
+  e.preventDefault();
+  document.body.classList.add("page-leaving");
+  setTimeout(() => {
+    window.location.href = a.href;
+  }, 180);
+});
 
 /* ---------------------- DELEGACIÓN DE CLICKS PÚBLICOS ---------------------- */
 
