@@ -1,0 +1,68 @@
+/* ==========================================================
+   ESCENA 3D — el video del ring como fondo de todo el sitio.
+   Cada página tiene su posición de cámara; al cambiar de página
+   la cámara viaja por el ring antes de cargar la siguiente.
+   ========================================================== */
+
+html { background: #0a0c0a; }
+html.scene-on body { background: transparent; }
+
+/* Lienzo fijo detrás de todo */
+.scene3d {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #0a0c0a center / cover no-repeat;
+  pointer-events: none;
+}
+.scene3d canvas { width: 100%; height: 100%; display: block; }
+
+/* Oscurece la escena a medida que bajas, para que el contenido se lea bien */
+.scene3d-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 10, 8, .55) 0%, rgba(8, 10, 8, .2) 35%, rgba(8, 10, 8, .75) 100%);
+}
+.scene3d-dim {
+  position: absolute;
+  inset: 0;
+  background: #0a0c0a;
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+
+/* El hero y los banners dejan ver la escena */
+html.scene-on .hero { background: transparent; }
+html.scene-on #heroMediaBg { display: none; }
+html.scene-on .page-banner-media:has(.hero-media-placeholder) { display: none; }
+
+/* Transición entre páginas: el contenido se desvanece y queda solo la cinemática */
+html.scene-on main,
+html.scene-on .site-footer {
+  transition: opacity .45s ease, transform .45s ease;
+}
+html.scene-leaving main,
+html.scene-leaving .site-footer {
+  opacity: 0;
+  transform: translateY(-14px);
+  pointer-events: none;
+}
+html.scene-entering main,
+html.scene-entering .site-footer {
+  opacity: 0;
+  transform: translateY(14px);
+}
+html.scene-leaving .scene3d-dim,
+html.scene-entering .scene3d-dim { opacity: 0 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.scene-leaving main, html.scene-leaving .site-footer,
+  html.scene-entering main, html.scene-entering .site-footer { transform: none; }
+}
+
+/* Transición nativa entre páginas (Chrome, Edge, Safari recientes): evita el parpadeo al cargar */
+@view-transition { navigation: auto; }
+.scene3d { view-transition-name: epw-scene; }
+::view-transition-old(epw-scene), ::view-transition-new(epw-scene) { animation: none; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .3s; }
