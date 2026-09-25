@@ -37,7 +37,10 @@
   const root = document.documentElement;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const ARRIVE_KEY = "EPW_SCENE_ARRIVE";
-  const stillUrl = (key) => `${BASE}s-${STILL[key]}.jpg`;
+  // Celular en vertical: video recortado en vertical (más nítido y más liviano)
+  const PORTRAIT = innerWidth < 768 && innerHeight > innerWidth;
+  const CROP = PORTRAIT ? [0.30, 0.375] : [0, 1];   // parte del video que se usa (x inicial, ancho)
+  const stillUrl = (key) => `${BASE}${PORTRAIT ? "m" : "s"}-${STILL[key]}.jpg`;
 
   if (known) {
     root.classList.add("scene-on");
@@ -52,7 +55,7 @@
   const conn = navigator.connection || {};
   const slow = conn.saveData || ["slow-2g", "2g"].includes(conn.effectiveType);
   const small = innerWidth < 768 || conn.effectiveType === "3g" || (conn.downlink && conn.downlink < 1.5);
-  const MODE = slow || reduce ? "lite" : small ? "sd" : "hd";
+  const MODE = slow || reduce ? "lite" : PORTRAIT ? "m" : small ? "sd" : "hd";
   const LOCAL_FILE = location.protocol === "file:"; // abierto con doble clic: sin WebGL ni cambio sin recarga
 
   // Dónde está el banner (cuadro del video original a 25 fps, x0, y0, x1, y1)
@@ -64,7 +67,9 @@
   function bannerAt(f) {
     let k = 0; while (k < BANNER.length - 2 && BANNER[k + 1][0] <= f) k++;
     const a = BANNER[k], b = BANNER[k + 1], t = Math.min(1, Math.max(0, (f - a[0]) / (b[0] - a[0])));
-    return [1, 2, 3, 4].map((j) => a[j] + (b[j] - a[j]) * t);
+    const r = [1, 2, 3, 4].map((j) => a[j] + (b[j] - a[j]) * t);
+    r[0] = (r[0] - CROP[0]) / CROP[1]; r[2] = (r[2] - CROP[0]) / CROP[1];
+    return r;
   }
 
   const now = () => performance.now() / 1000;
@@ -104,6 +109,9 @@
     // ---------- Estado ----------
     let time = STOPS[PAGE], arrivedAt = now(), zoomMix = 0;
     let videoReady = false, run = null, pending = null, needUpload = true, shown = null, fade = null;
+    // Respaldo en celular si el video no puede reproducirse (p. ej. modo de ahorro de batería del iPhone)
+    const SEQ_STEP = 4 / 50, SEQ_N = 76;
+    let seqFrames = null, seqReady = false, seqRun = null;
     const stills = {};
     const mkVideo = () => {
       const v = document.createElement("video");
@@ -233,6 +241,12 @@
       if (Math.abs(rate - v.playbackRate) > 0.05) v.playbackRate = rate;
     }
 
+    function seqTravel(to) {
+      const d = Math.abs(to - time);
+      if (d < 0.02) { arrive(); return; }
+      seqRun = { from: time, to, start: now(), dur: Math.min(1.6, Math.max(.9, d / 2.3)) };
+    }
+
     // ---------- Bucle ----------
     function loop() {
       const t = now();
@@ -242,6 +256,14 @@
       const zoom = 1 + zoomMix * .035 * (.5 - .5 * Math.cos((t - arrivedAt) * .5));
       const tt = reduce ? 0 : t;
 
+      if (seqRun) {
+        const k = Math.min(1, (t - seqRun.start) / seqRun.dur);
+        const e = -(Math.cos(Math.PI * k) - 1) / 2;                 // arranque y frenado suaves
+        time = seqRun.from + (seqRun.to - seqRun.from) * e;
+        if (k >= 1) { seqRun = null; arrive(); }
+        else if (onNear && k > .78) { const n = onNear; onNear = null; n(); }
+      }
+
       if (fade) {
         const k = Math.min(1, (t - fade.start) / fade.dur), e = k * k * (3 - 2 * k);
         draw(fade.a, fade.b, e, tt, STOPS[e < .5 ? fade.fromKey : fade.toKey] * 25, zoom, false);
@@ -249,6 +271,9 @@
       } else if (shown && shown.readyState >= 2) {
         draw(shown, shown, 0, tt, time * 25, zoom, hasRVFC ? needUpload : (needUpload || !!run));
         needUpload = false;
+      } else if (seqReady) {
+        const p = Math.min(SEQ_N - 1, Math.max(0, time / SEQ_STEP)), a = Math.floor(p), b = Math.min(SEQ_N - 1, a + 1);
+        draw(seqFrames[a], seqFrames[b], p - a, tt, time * 25, zoom, false);
       } else if (stills[PAGE]) {
         draw(stills[PAGE], stills[PAGE], 0, tt, STOPS[PAGE] * 25, zoom, false);
       }
@@ -305,6 +330,7 @@
       const arrived = new Promise((res) => {
         if (reduce) { time = STOPS[key]; res(); return; }
         if (videoReady) { onArrive = res; travel(STOPS[key]); }
+        else if (seqReady) { onArrive = res; seqTravel(STOPS[key]); }
         else if (stills[key] && stills[PAGE]) {
           fade = { a: stills[PAGE], b: stills[key], fromKey: PAGE, toKey: key, start: now(), dur: .8, done: res };
         } else res();
@@ -332,6 +358,7 @@
       const go = () => { try { sessionStorage.setItem(ARRIVE_KEY, key); } catch (_) {} location.href = URLS[key]; };
       if (reduce) return go();
       if (videoReady) { onArrive = go; travel(STOPS[key]); }
+      else if (seqReady) { onArrive = go; seqTravel(STOPS[key]); }
       else if (stills[key] && stills[PAGE]) fade = { a: stills[PAGE], b: stills[key], fromKey: PAGE, toKey: key, start: now(), dur: .7, done: go };
       else go();
     }
@@ -348,7 +375,7 @@
       const key = pageOf(url.pathname);
       if (!(key in STOPS)) return;
       e.preventDefault();
-      if (key === PAGE && !run) { scrollTo({ top: 0, behavior: "smooth" }); return; }
+      if (key === PAGE && !run && !seqRun) { scrollTo({ top: 0, behavior: "smooth" }); return; }
       if (SPA) navigate(key, true); else navigateWithReload(key);
     }, true);
 
@@ -377,8 +404,36 @@
     });
     const videoSrc = async (url) => {
       if (LOCAL_FILE) return url;
-      return URL.createObjectURL(await (await fetch(url)).blob());
+      const res = await fetch(url, { priority: "low" });
+      if (!res.ok) throw new Error(res.status);
+      return URL.createObjectURL(await res.blob());
     };
+    // Espera a que la página y sus datos ya estén en pantalla antes de bajar el video,
+    // para no competir con lo importante cuando hay poca señal
+    const pageSettled = () => new Promise((res) => {
+      const check = () => (document.getElementById("pageLoader") ? setTimeout(check, 200) : setTimeout(res, 400));
+      if (document.readyState === "complete") check(); else addEventListener("load", check, { once: true });
+      setTimeout(res, 8000);
+    });
+    // En iPhone el video no carga hasta que se intenta reproducir: se "despierta" con play/pause
+    async function warm(v) {
+      if (v.readyState < 1) await Promise.race([once(v, "loadedmetadata"), wait(8000)]);
+      try { await v.play(); v.pause(); } catch (_) { return false; }
+      const t0 = now();
+      while (v.readyState < 2 && now() - t0 < 10) await wait(100);
+      return v.readyState >= 2;
+    }
+    async function loadSeq() {
+      const frames = new Array(SEQ_N);
+      const queue = [...Array(SEQ_N).keys()];
+      await Promise.all(Array.from({ length: 4 }, async () => {
+        while (queue.length) {
+          const i = queue.shift();
+          frames[i] = await loadImg(`${BASE}fm/f${String(i).padStart(3, "0")}.webp`);
+        }
+      }));
+      if (frames.every(Boolean)) { seqFrames = frames; seqReady = true; }
+    }
     const idle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 600));
 
     (async () => {
@@ -387,16 +442,19 @@
       Object.keys(STOPS).forEach(async (k) => { if (!stills[k]) stills[k] = await loadImg(stillUrl(k)); });
       if (SPA) idle(() => Object.keys(URLS).forEach((k) => { if (k !== PAGE) getDoc(k).catch(() => {}); }));
       if (MODE === "lite") return;
+      await pageSettled();
       try {
         const [f, r] = await Promise.all([videoSrc(`${BASE}${MODE}-f.mp4`), videoSrc(`${BASE}${MODE}-r.mp4`)]);
         VF.src = f; VR.src = r;
-        await Promise.all([once(VF, "loadeddata"), once(VR, "loadeddata")]);
+        const ok = await Promise.all([warm(VF), warm(VR)]);
+        if (!ok.every(Boolean)) throw new Error("el video no puede reproducirse");
         if (run || fade) await new Promise((res) => { const c = () => (run || fade ? setTimeout(c, 100) : res()); c(); });
         time = STOPS[PAGE];
         VF.currentTime = time; await once(VF, "seeked");
         shown = VF; needUpload = true; videoReady = true;
       } catch (_) {
-        // Sin video: se queda con los fundidos entre fotos
+        // Sin video: en celular usa la secuencia de cuadros; si no, fundidos entre fotos
+        if (PORTRAIT && !LOCAL_FILE) loadSeq();
       }
     })();
   }
