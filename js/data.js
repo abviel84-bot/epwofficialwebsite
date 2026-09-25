@@ -25,6 +25,12 @@ const ADMIN_PASSWORD = "nocturna2026";
  */
 const DEFAULT_DB = {
   site: {
+    // Crédito del desarrollador (footer) — editable en Modo Administrador → "Editar crédito"
+    devCreditName: "Tryhard Web Solution",
+    devCreditLabel: "Sitio diseñado y desarrollado por",
+    devCreditLogoUrl: "",
+    devCreditButtonLabel: "Contáctanos",
+    devCreditButtonLink: "",
     brand: "EPW",
     tagline: "La lucha libre no duerme.",
     heroSubtitle:

@@ -225,6 +225,41 @@ function renderSiteChrome(db) {
   });
 
   document.querySelectorAll(".js-footer-year").forEach((el) => (el.textContent = new Date().getFullYear()));
+
+  renderDevCredit(db);
+}
+
+/**
+ * Crédito del desarrollador en el footer (Tryhard Web Solution).
+ * Todo se edita en Modo Administrador → "Editar crédito". Si no hay
+ * enlace, el botón se oculta para los visitantes (solo el admin lo ve,
+ * marcado como pendiente). Si no hay logo, se muestra el nombre en texto.
+ */
+function renderDevCredit(db) {
+  const box = $("devCredit");
+  if (!box) return;
+  const s = db.site || {};
+  const name = s.devCreditName || "Tryhard Web Solution";
+  const link = (s.devCreditButtonLink || "").trim();
+  setText("devCreditName", name);
+  setText("devCreditLabel", s.devCreditLabel || "Sitio diseñado y desarrollado por");
+
+  const logoLink = $("devCreditLogoLink");
+  if (logoLink) {
+    logoLink.setAttribute("aria-label", name);
+    if (link) { logoLink.href = link; logoLink.removeAttribute("aria-disabled"); }
+    else { logoLink.removeAttribute("href"); logoLink.setAttribute("aria-disabled", "true"); }
+    // Sin logo subido en el admin, usa el logo de Tryhard incluido en el sitio
+    const logo = s.devCreditLogoUrl || "assets/tryhard-logo.png";
+    logoLink.innerHTML = `<img src="${logo}" alt="${name}" />`;
+  }
+
+  const btn = $("devCreditBtn");
+  if (btn) {
+    btn.textContent = s.devCreditButtonLabel || "Contáctanos";
+    if (link) { btn.href = link; btn.classList.remove("is-pending"); }
+    else { btn.removeAttribute("href"); btn.classList.add("is-pending"); }
+  }
 }
 
 /** Marca el link activo del menú según data-page del <body> vs data-page de cada <a>. */

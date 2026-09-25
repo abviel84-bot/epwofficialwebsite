@@ -1717,3 +1717,81 @@ body.admin-mode .wrestler-card {
     opacity: 0.85;
   }
 }
+
+
+/* ------------------------------------------------------------------
+ * CRÉDITO DEL DESARROLLADOR (Tryhard Web Solution)
+ * Franja al final del footer, visible en todas las páginas.
+ * ------------------------------------------------------------------ */
+.dev-credit {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 8px 0 28px;
+  padding: 18px 22px;
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius);
+  background: rgba(10, 12, 10, 0.72);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 24px rgba(34, 227, 93, 0.08);
+}
+.dev-credit-logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 64px;
+}
+.dev-credit-logo img {
+  height: 64px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+.dev-credit-wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  font-family: var(--font-display);
+  color: var(--white);
+}
+.dev-credit-wordmark b {
+  font-weight: 400;
+  font-size: 1.9rem;
+  letter-spacing: 0.08em;
+}
+.dev-credit-wordmark small {
+  font-size: 0.8rem;
+  letter-spacing: 0.32em;
+  color: var(--green);
+  margin-top: 2px;
+}
+.dev-credit-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 200px;
+}
+.dev-credit-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray-dim);
+}
+.dev-credit-name {
+  font-size: 1.05rem;
+  color: var(--white);
+}
+.dev-credit-btn { flex-shrink: 0; }
+.dev-credit-btn.is-pending { display: none; }
+body.admin-mode .dev-credit-btn.is-pending {
+  display: inline-flex;
+  opacity: 0.45;
+  border-style: dashed;
+  pointer-events: none;
+}
+body.admin-mode .dev-credit-btn.is-pending::after { content: " · sin enlace"; }
+@media (max-width: 560px) {
+  .dev-credit { padding: 16px; gap: 14px; }
+  .dev-credit-btn { width: 100%; justify-content: center; }
+}

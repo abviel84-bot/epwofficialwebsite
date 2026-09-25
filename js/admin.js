@@ -715,6 +715,27 @@
     );
   }
 
+  function editCredit() {
+    const db = getDB();
+    const st = db.site;
+    openForm(
+      "Editar crédito del desarrollador",
+      `<form>
+        ${photoField("Logo (vacío = logo de Tryhard incluido en el sitio)", "devCreditLogoUrl", st.devCreditLogoUrl)}
+        ${field("Nombre", "devCreditName", st.devCreditName || "Tryhard Web Solution")}
+        ${field("Texto arriba del nombre", "devCreditLabel", st.devCreditLabel || "Sitio diseñado y desarrollado por")}
+        ${field("Texto del botón", "devCreditButtonLabel", st.devCreditButtonLabel || "Contáctanos")}
+        ${field("Enlace del botón (página web, Instagram, WhatsApp…)", "devCreditButtonLink", st.devCreditButtonLink, "url")}
+        <p style="font-size:0.75rem; color:var(--gray-dim); margin-top:-4px;">Si dejas el enlace vacío, el botón no se muestra a los visitantes.</p>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">Guardar cambios</button></div>
+      </form>`,
+      (data) => {
+        Object.assign(db.site, data);
+        persistAndReport(db, "Crédito actualizado.");
+      }
+    );
+  }
+
   /* ---------------- Delegación de clicks del panel admin ---------------- */
 
   document.addEventListener("click", (e) => {
@@ -751,6 +772,7 @@
       case "edit-contact": return editContact();
       case "edit-contact-cta": return editContactCta();
       case "edit-contact-form": return editContactForm();
+      case "edit-credit": return editCredit();
       default: return;
     }
   });
